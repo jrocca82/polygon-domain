@@ -1,7 +1,7 @@
-import { Flex, Heading, Text, Image, Button } from "@chakra-ui/react";
+import { Flex, Heading, Text, Image, Button, Input } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { ConnectionContext } from "../contexts/ConnectionContext";
 
 const Home: NextPage = () => {
@@ -9,6 +9,10 @@ const Home: NextPage = () => {
   const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 
   const { accounts, connectWallet } = useContext(ConnectionContext);
+
+  const [domain, setDomain] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [record, setRecord] = useState<string>("");
 
   return (
     <Flex flexDir="column" alignItems="center">
@@ -35,14 +39,37 @@ const Home: NextPage = () => {
       </Flex>
 
       {accounts ? (
-        <Text my="30px">Connected!</Text>
+        <Flex flexDir="column" my="30px" height="170px" justify="space-between">
+          <Text>
+            Connected! Please fill out the form below to register your domain
+            name!
+          </Text>
+          <Input
+            placeholder="Domain name"
+            value={domain}
+            onChange={(e) => setDomain(e.target.value)}
+          />
+          <Input
+            placeholder="Your most wicked power"
+            value={record}
+            onChange={(e) => setRecord(e.target.value)}
+          />
+          <Button>Register</Button>
+        </Flex>
       ) : (
-        <Button my="30px" onClick={connectWallet}>Connect wallet</Button>
+        <Button my="30px" onClick={connectWallet}>
+          Connect wallet
+        </Button>
       )}
 
-      <Flex>
-        <a href={TWITTER_LINK} target="_blank">
-          <Image src="/twitter-logo.png" alt="Twitter Logo" width={50} />
+      <Flex flexDir="column" alignItems="center">
+        <a href={TWITTER_LINK} target="_blank" rel="noreferrer">
+          <Image
+            src="/twitter-logo.png"
+            alt="Twitter Logo"
+            width={50}
+            alignSelf="center"
+          />
         </a>
       </Flex>
     </Flex>

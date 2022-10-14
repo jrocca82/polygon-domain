@@ -23,6 +23,7 @@ export const ConnectionContextProvider = ({
   const [ethersProvider, setEthersProvider] =
     useState<ethers.providers.Web3Provider>();
   const [accounts, setAccounts] = useState<string[]>();
+  const tld = '.wicked';
 
   const connectWallet = useCallback(async () => {
     //@ts-ignore
