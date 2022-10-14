@@ -27,6 +27,18 @@ describe("Domains", () => {
   });
 
   it("Should only allow owner to change a record", async () => {
-    await expect(contract.connect(deployer).setRecord("doom", "gloom")).to.be.revertedWith("This is not your domain!");
+    await expect(contract.connect(deployer).setRecord("doom", "gloom")).to.be.revertedWithCustomError;
+  });
+  
+  it("Should only allow owner to withdraw", async () => {
+    const value = ethers.utils.parseEther("0.3");
+    const initOwnerBalance = await ethers.provider.getBalance(deployer.address);
+    await contract.connect(alice).register("doom", {value: value});
+    await expect(contract.connect(alice).withdraw()).to.be.revertedWith("Ownable: caller is not the owner");
+    await contract.connect(deployer).withdraw();
+    const ownerBalance = await ethers.provider.getBalance(deployer.address);
+    expect(ownerBalance).to.be.greaterThan(initOwnerBalance);
+    const contractBalance = await ethers.provider.getBalance(contract.address);
+    expect(contractBalance).to.be.equal(ethers.constants.Zero);
   });
 });

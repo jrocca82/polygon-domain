@@ -4,11 +4,12 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "hardhat/console.sol";
 import { StringUtils } from "./libraries/StringUtils.sol";
 
-contract Domains is ERC721URIStorage {
+contract Domains is ERC721URIStorage, Ownable {
     // Domain TLD
     string public tld;
 
@@ -22,13 +23,20 @@ contract Domains is ERC721URIStorage {
     // Store domain names to address
     mapping(string => address) public domains;
 
+    //Token ID to name
+    mapping (uint => string) public names;
+
     //Maintain record of registered domains
     mapping(string => string) public records;
 
-    constructor(string memory _tld) payable ERC721("Wicked Name Service", "WNS") {
+    constructor(string memory _tld) ERC721("Wicked Name Service", "WNS") payable {
         tld = _tld;
         console.log("%s name service deployed", _tld);
     }
+
+    error Unauthorized();
+    error AlreadyRegistered();
+    error InvalidName(string name);
 
     function price(string calldata name) public pure returns(uint) {
         uint len = StringUtils.strlen(name);
@@ -42,9 +50,14 @@ contract Domains is ERC721URIStorage {
         }
     }
 
+    function valid(string calldata name) public pure returns(bool) {
+        return StringUtils.strlen(name) >= 3 && StringUtils.strlen(name) <= 10;
+    }
 
     function register(string calldata name) public payable{
         require(domains[name] == address(0));
+        if (domains[name] != address(0)) revert AlreadyRegistered();
+        if (!valid(name)) revert InvalidName(name);
         
         uint _price = price(name);
 
@@ -80,11 +93,13 @@ contract Domains is ERC721URIStorage {
         console.log("Final tokenURI", finalTokenUri);
         console.log("--------------------------------------------------------\n");
 
-        _safeMint(msg.sender, newRecordId);
-        _setTokenURI(newRecordId, finalTokenUri);
         domains[name] = msg.sender;
+        names[newRecordId] = name;
 
         _tokenIds.increment();
+
+        _safeMint(msg.sender, newRecordId);
+        _setTokenURI(newRecordId, finalTokenUri);
     }
 
 
@@ -93,11 +108,29 @@ contract Domains is ERC721URIStorage {
     }
 
     function setRecord(string calldata name, string calldata record) public {
-      require(domains[name] == msg.sender, "This is not your domain!");
+      if (msg.sender != domains[name]) revert Unauthorized();
       records[name] = record;
     }
 
     function getRecord(string calldata name) public view returns(string memory) {
         return records[name];
     }
+
+    function getAllNames() public view returns (string[] memory) {
+        console.log("Getting all names from contract");
+        string[] memory allNames = new string[](_tokenIds.current());
+        for (uint i = 0; i < _tokenIds.current(); i++) {
+            allNames[i] = names[i];
+            console.log("Name for token %d is %s", i, allNames[i]);
+        }
+
+        return allNames;
+    }
+
+    function withdraw() public onlyOwner {
+        uint amount = address(this).balance;
+        
+        (bool success, ) = msg.sender.call{value: amount}("");
+        require(success, "Failed to withdraw Matic");
+    } 
 }

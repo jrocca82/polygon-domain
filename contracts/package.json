@@ -7,7 +7,7 @@
     "hh:deploy": "npx hardhat compile && npx hardhat deploy",
     "hh:compile": "npx hardhat compile && npx hardhat size-contracts",
     "hh:node": "npx hardhat node --hostname localhost",
-    "test": "npx hardhat test",
+    "test": "npx hardhat compile && npx hardhat test",
     "coverage": "npx hardhat coverage"
   },
   "author": "",
