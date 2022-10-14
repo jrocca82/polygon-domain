@@ -210,9 +210,7 @@ const Home: NextPage = () => {
           {loading ? (
             <>
               <Spinner alignSelf="center" />
-              <Text>
-                Please confirm transaction(s) in your Metamask
-              </Text>
+              <Text>Please confirm transaction(s) in your Metamask</Text>
             </>
           ) : null}
           {mintError ? <Text>{mintError}</Text> : null}
@@ -228,11 +226,14 @@ const Home: NextPage = () => {
         </Button>
       )}
       {editing ? (
-        <Flex width="100vw" maxWidth="500px" justify="space-around" mt="-20px" mb="20px">
-          <Button
-            disabled={loading}
-            onClick={updateDomain}
-          >
+        <Flex
+          width="100vw"
+          maxWidth="500px"
+          justify="space-around"
+          mt="-20px"
+          mb="20px"
+        >
+          <Button disabled={loading} onClick={updateDomain}>
             Set record
           </Button>
           <Button
@@ -257,6 +258,7 @@ const Home: NextPage = () => {
               {mints.map((mint) => {
                 return (
                   <Flex
+                    key={mint.id}
                     w="100%"
                     justify="space-around"
                     flexDir="column"
